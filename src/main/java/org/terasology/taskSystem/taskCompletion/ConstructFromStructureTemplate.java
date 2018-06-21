@@ -18,21 +18,30 @@ package org.terasology.taskSystem.taskCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.Constants;
+import org.terasology.buildings.events.BuildingConstructionCompletedEvent;
 import org.terasology.context.Context;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
+import org.terasology.holdingSystem.components.HoldingComponent;
+import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.Region3i;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.registry.In;
 import org.terasology.registry.Share;
+import org.terasology.structureTemplates.components.SpawnBlockRegionsComponent;
 import org.terasology.structureTemplates.events.SpawnStructureEvent;
 import org.terasology.structureTemplates.interfaces.StructureTemplateProvider;
+import org.terasology.structureTemplates.internal.components.StructureTemplateOriginComponent;
 import org.terasology.structureTemplates.util.transform.BlockRegionMovement;
 import org.terasology.structureTemplates.util.transform.BlockRegionTransformationList;
 import org.terasology.structureTemplates.util.transform.HorizontalBlockRegionRotation;
 import org.terasology.taskSystem.BuildingType;
+import org.terasology.world.BlockEntityRegistry;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Share(ConstructFromStructureTemplate.class)
 @RegisterSystem(RegisterMode.CLIENT)
@@ -42,6 +51,11 @@ public class ConstructFromStructureTemplate extends BaseComponentSystem implemen
     @In
     private Context context;
 
+    @In
+    private LocalPlayer localPlayer;
+
+    private BlockEntityRegistry blockEntityRegistry;
+
     private StructureTemplateProvider structureTemplateProvider;
 
     private EntityRef buildingTemplate;
@@ -49,6 +63,7 @@ public class ConstructFromStructureTemplate extends BaseComponentSystem implemen
     @Override
     public void postBegin() {
         structureTemplateProvider = context.get(StructureTemplateProvider.class);
+        blockEntityRegistry = context.get(BlockEntityRegistry.class);
     }
 
     public void constructBuilding(Region3i selectedRegion, BuildingType buildingType) {
@@ -74,6 +89,8 @@ public class ConstructFromStructureTemplate extends BaseComponentSystem implemen
 
         buildingTemplate.send(new SpawnStructureEvent(transformationList));
 
+        sendConstructionCompleteEvent(centerBlockPosition, buildingType);
+
     }
 
     public void selectBuilding(BuildingType buildingType) {
@@ -81,5 +98,21 @@ public class ConstructFromStructureTemplate extends BaseComponentSystem implemen
             case Diner :
                 buildingTemplate = structureTemplateProvider.getRandomTemplateOfType(Constants.STRUCTURE_TEMPLATE_TYPE_DINER);
         }
+    }
+
+    private void sendConstructionCompleteEvent(Vector3i centerBlock, BuildingType buildingType) {
+        SpawnBlockRegionsComponent blockRegionsComponent = buildingTemplate.getComponent(SpawnBlockRegionsComponent.class);
+        List<SpawnBlockRegionsComponent.RegionToFill> relativeRegions = blockRegionsComponent.regionsToFill;
+
+        List<Region3i> absoluteRegions = new ArrayList<>();
+
+        for (SpawnBlockRegionsComponent.RegionToFill regionToFill : relativeRegions) {
+            Region3i relativeRegion = regionToFill.region;
+            Region3i absoluteRegion = relativeRegion.move(centerBlock);
+            absoluteRegions.add(absoluteRegion);
+        }
+
+        // Add this building's regions to the Holdingw
+        localPlayer.getCharacterEntity().send(new BuildingConstructionCompletedEvent(absoluteRegions, buildingType));
     }
 }
