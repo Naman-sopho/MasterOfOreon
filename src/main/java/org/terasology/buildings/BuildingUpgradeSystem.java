@@ -60,12 +60,14 @@ public class BuildingUpgradeSystem extends BaseComponentSystem {
     private EntityManager entityManager;
 
     private TaskManagementSystem taskMangementSystem;
+    private ConstructFromStructureTemplate constructFromStructureTemplate;
 
     private EntityRef buildingToUpgrade;
 
     @Override
     public void postBegin() {
         taskMangementSystem = context.get(TaskManagementSystem.class);
+        constructFromStructureTemplate = context.get(ConstructFromStructureTemplate.class);
     }
 
     @ReceiveEvent
@@ -126,8 +128,6 @@ public class BuildingUpgradeSystem extends BaseComponentSystem {
 
         ConstructedBuildingComponent buildingComponent = buildingToUpgrade.getComponent(ConstructedBuildingComponent.class);
 
-        buildingToUpgrade.saveComponent(buildingComponent);
-
         TaskComponent taskComponent = new TaskComponent();
         taskComponent.assignedTaskType = AssignedTaskType.Upgrade;
         // TODO: Assign a random region or a region based on blocks to be upgraded
@@ -140,7 +140,11 @@ public class BuildingUpgradeSystem extends BaseComponentSystem {
     }
 
     @ReceiveEvent(components = {TaskComponent.class})
-    public void onUpgradeStart(BuildingUpgradeStartEvent event, EntityRef oreon) {
+    public void onUpgradeStart(BuildingUpgradeStartEvent event, EntityRef oreon, TaskComponent taskComponent) {
         logger.info("upgrade event start");
+        EntityRef building = taskComponent.buildingToUpgrade;
+        ConstructedBuildingComponent buildingComponent = building.getComponent(ConstructedBuildingComponent.class);
+
+        constructFromStructureTemplate.constructBuilding(buildingComponent.centerLocation, buildingComponent.buildingType, buildingComponent.currentLevel + 1);
     }
 }
