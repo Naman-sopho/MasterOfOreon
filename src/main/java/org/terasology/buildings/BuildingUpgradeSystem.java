@@ -37,7 +37,6 @@ import org.terasology.logic.common.DisplayNameComponent;
 import org.terasology.math.Region3i;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.math.geom.Vector3i;
-import org.terasology.protobuf.EntityData;
 import org.terasology.registry.In;
 import org.terasology.registry.Share;
 import org.terasology.taskSystem.AssignedTaskType;
@@ -79,7 +78,7 @@ public class BuildingUpgradeSystem extends BaseComponentSystem {
         EntityRef selectedItem = heldItemComponent.selectedItem;
         DisplayNameComponent displayNameComponent = selectedItem.getComponent(DisplayNameComponent.class);
 
-        if (!displayNameComponent.name.equals(Constants.UPGRADE_TOOL_NAME)) {
+        if (displayNameComponent != null && !displayNameComponent.name.equals(Constants.UPGRADE_TOOL_NAME)) {
             return;
         }
 

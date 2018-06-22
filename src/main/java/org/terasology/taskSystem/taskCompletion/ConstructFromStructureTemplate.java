@@ -100,6 +100,9 @@ public class ConstructFromStructureTemplate extends BaseComponentSystem implemen
         switch (buildingType) {
             case Diner :
                 buildingTemplate = structureTemplateProvider.getRandomTemplateOfType(Constants.STRUCTURE_TEMPLATE_TYPE_DINER + Integer.toString(level));
+
+            case Storage:
+                buildingTemplate = structureTemplateProvider.getRandomTemplateOfType(Constants.STRUCTURE_TEMPLATE_TYPE_STORAGE + Integer.toString(level));
         }
     }
 
