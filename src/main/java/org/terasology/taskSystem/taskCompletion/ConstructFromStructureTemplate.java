@@ -112,7 +112,7 @@ public class ConstructFromStructureTemplate extends BaseComponentSystem implemen
             absoluteRegions.add(absoluteRegion);
         }
 
-        // Add this building's regions to the Holdingw
-        localPlayer.getCharacterEntity().send(new BuildingConstructionCompletedEvent(absoluteRegions, buildingType));
+        // Add this building's regions to the Holding
+        localPlayer.getCharacterEntity().send(new BuildingConstructionCompletedEvent(absoluteRegions, buildingType, centerBlock));
     }
 }
