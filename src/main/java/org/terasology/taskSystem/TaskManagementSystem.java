@@ -29,6 +29,7 @@ import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
+import org.terasology.flexiblemovement.FlexibleMovementComponent;
 import org.terasology.holdingSystem.HoldingAuthoritySystem;
 import org.terasology.holdingSystem.components.AssignedAreaComponent;
 import org.terasology.holdingSystem.components.HoldingComponent;
@@ -37,7 +38,6 @@ import org.terasology.logic.characters.CharacterHeldItemComponent;
 import org.terasology.logic.characters.events.HorizontalCollisionEvent;
 import org.terasology.logic.chat.ChatMessageEvent;
 import org.terasology.logic.common.DisplayNameComponent;
-import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.nameTags.NameTagComponent;
 import org.terasology.logic.selection.ApplyBlockSelectionEvent;
 import org.terasology.math.Region3i;
@@ -293,13 +293,21 @@ public class TaskManagementSystem extends BaseComponentSystem {
     }
 
     private void setOreonTarget(Actor oreon, Vector3i target) {
-        MinionMoveComponent moveComponent = oreon.getComponent(MinionMoveComponent.class);
+        //MinionMoveComponent moveComponent = oreon.getComponent(MinionMoveComponent.class);
 
-        moveComponent.target = new Vector3f(target.x, target.y, target.z);
+        //moveComponent.target = new Vector3f(target.x, target.y, target.z);
 
-        logger.info("Set Oreon target to : " + moveComponent.target);
+        logger.info("Set Oreon target to : " + target);
 
-        oreon.save(moveComponent);
+        //oreon.save(moveComponent);
+
+        if (!oreon.hasComponent(FlexibleMovementComponent.class)) {
+            oreon.getEntity().addComponent(new FlexibleMovementComponent());
+        }
+
+        FlexibleMovementComponent movementComponent = oreon.getComponent(FlexibleMovementComponent.class);
+        movementComponent.setPathGoal(target);
+        oreon.save(movementComponent);
     }
 
     /**
